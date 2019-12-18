@@ -25,10 +25,9 @@ fn main()
   let cstr: Vec<&CStr> = cvec.iter().map(|x| x.as_c_str()).collect();
   let cargs: &[&CStr] = cstr.as_slice();
   let toexec = &CString::new(args[2].clone()).unwrap();
-  let slice = &cargs[3..];
+  let slice = &cargs[2..];
   let time = must(sanitize(&args));
   let s = start.elapsed().as_secs();
-  println!("{}", s);
   let rlp = rlimit {rlim_cur: time +s, rlim_max: time+s+1};
   let rlpb = Box::new(rlp);
   must(wrap_setrlimit(RLIMIT_CPU, rlpb));
