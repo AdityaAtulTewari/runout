@@ -31,8 +31,6 @@ fn main()
   let rlp = rlimit {rlim_cur: time +s, rlim_max: time+s+1};
   let rlpb = Box::new(rlp);
   must(wrap_setrlimit(RLIMIT_CPU, rlpb));
-  println!("{:?}", toexec);
-  println!("{:?}", slice);
   nmust(execvp(toexec, slice));
 }
 
