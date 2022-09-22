@@ -10,7 +10,10 @@ use libc::c_char;
 
 macro_rules! clean_panic
 {
-    ($str:literal) => { panic!("{}", $str); }
+  ($str:literal) => {
+    println!("Error: {}", $str);
+    std::process::exit(1)
+  }
 }
 
 #[no_mangle]
@@ -57,7 +60,7 @@ fn wrap_setrlimit(resource: __rlimit_resource_t, rlp: *const rlimit)
   };
 
   if setrlimit_status > 0 {
-    clean_panic!("Failed to set rlimit")
+    clean_panic!("failed to set rlimit");
   }
 }
 
@@ -65,7 +68,7 @@ fn sanitize_input(argc: i32, argv: *const *const c_char) -> rlim_t
 {
   if 2 != argc
   {
-    clean_panic!("You must provide two arguments: runout [seconds] [COMMAND]");
+    clean_panic!("you must provide two arguments: runout [seconds] [COMMAND]");
   }
 
   let num: *const c_char;
@@ -84,7 +87,7 @@ fn sanitize_input(argc: i32, argv: *const *const c_char) -> rlim_t
     match (curr as u8 as char).to_digit(10)
     {
       Some(a) => { secs *= 10; secs += a as rlim_t; }
-      None => { clean_panic!("The second argument must be a valid time_t number."); }
+      None => { clean_panic!("the second argument must be a valid time_t number"); }
     };
     i+=1;
     //unsafe: get the ith char
