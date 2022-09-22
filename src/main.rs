@@ -1,7 +1,6 @@
 #![no_main]
 
 use std::time::{Instant};
-use std::result::Result;
 
 extern crate libc;
 use libc::{rlimit, rlim_t, __rlimit_resource_t};
@@ -13,7 +12,7 @@ use libc::c_char;
 pub extern fn main(argc: i32, argv: *const *const c_char) -> i32
 {
   let start = Instant::now();
-  let time = sanitize_input(argc, argv).unwrap();
+  let time = sanitize_input(argc, argv);
 
   let mut rlp = rlimit
   {
@@ -29,29 +28,21 @@ pub extern fn main(argc: i32, argv: *const *const c_char) -> i32
   //unsafe: pushing through argv to execvp
   let function = unsafe{*argv.offset(2)};
   let execvp_args = unsafe{argv.offset(2)};  
-  wrap_setrlimit(libc::RLIMIT_CPU, rlpb).unwrap();
-  wrap_execvp(function, execvp_args).unwrap();
-  0
+  wrap_setrlimit(libc::RLIMIT_CPU, rlpb);
+  unsafe{execvp(function, execvp_args)}
 }
-
+/*
 #[inline]
-fn wrap_execvp(function: *const c_char, args: *const *const c_char) -> Result<(), &'static str>
+fn wrap_execvp(function: *const c_char, args: *const *const c_char) -> i32
 {
   //unsafe: call to execvp
-  let execvp_status;
   unsafe
   {
-    execvp_status = execvp(function, args);
-  };
-
-  match execvp_status
-  {
-    0 => Ok(()),
-    _ => Err("Failed to set limits")
+    execvp(function, args);
   }
 }
-
-fn wrap_setrlimit(resource: __rlimit_resource_t, rlp: *const rlimit) -> Result<(), &'static str>
+*/
+fn wrap_setrlimit(resource: __rlimit_resource_t, rlp: *const rlimit)
 {
   //unsafe: call to setrlimit
   let setrlimit_status;  
@@ -60,18 +51,16 @@ fn wrap_setrlimit(resource: __rlimit_resource_t, rlp: *const rlimit) -> Result<(
     setrlimit_status = setrlimit(resource, rlp);
   };
 
-  match setrlimit_status
-  {
-    0 => Ok(()),
-    _ => Err("Failed to set limits")
+  if setrlimit_status > 0 {
+    panic!("Failed to set rlimit")
   }
 }
 
-fn sanitize_input(argc: i32, argv: *const *const c_char) -> Result<rlim_t, &'static str>
+fn sanitize_input(argc: i32, argv: *const *const c_char) -> rlim_t
 {
   if 2 != argc
   {
-    return Err("You must provide two arguments: runout [seconds] [COMMAND]");
+    panic!("You must provide two arguments: runout [seconds] [COMMAND]");
   }
 
   let num: *const c_char;
@@ -90,12 +79,12 @@ fn sanitize_input(argc: i32, argv: *const *const c_char) -> Result<rlim_t, &'sta
     match (curr as u8 as char).to_digit(10)
     {
       Some(a) => { secs *= 10; secs += a as rlim_t; }
-      None => { return Err("The second argument must be a valid time_t number."); }
+      None => { panic!("The second argument must be a valid time_t number."); }
     };
     i+=1;
     //unsafe: get the ith char
     curr = unsafe{*num.offset(i)};
   }
-  return Ok(secs);
+  return secs;
 }
 
