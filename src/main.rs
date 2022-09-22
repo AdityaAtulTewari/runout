@@ -66,7 +66,7 @@ fn wrap_setrlimit(resource: __rlimit_resource_t, rlp: *const rlimit)
 
 fn sanitize_input(argc: i32, argv: *const *const c_char) -> rlim_t
 {
-  if 2 != argc
+  if 2 > argc
   {
     clean_panic!("you must provide two arguments: runout [seconds] [COMMAND]");
   }
