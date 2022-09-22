@@ -25,17 +25,13 @@ pub extern fn main(argc: i32, argv: *const *const c_char) -> i32
   let s = start.elapsed().as_secs();
   rlp.rlim_cur = rlp.rlim_cur + s;
   rlp.rlim_max = rlp.rlim_max + s;
-
+    
+  //unsafe: pushing through argv to execvp
   let function = unsafe{*argv.offset(2)};
   let execvp_args = unsafe{argv.offset(2)};  
-  //unsafe: pushing through argv to execvp
-
   wrap_setrlimit(libc::RLIMIT_CPU, rlpb).unwrap();
-  match wrap_execvp(function, execvp_args).unwrap()
-  {
-    () => 0,
-    _ => -1
-  }
+  wrap_execvp(function, execvp_args).unwrap();
+  0
 }
 
 #[inline]
