@@ -87,7 +87,7 @@ fn sanitize_input(argc: i32, argv: *const *const c_char) -> rlim_t
     match (curr as u8 as char).to_digit(10)
     {
       Some(a) => { secs *= 10; secs += a as rlim_t; }
-      None => { clean_panic!("the second argument must be a valid time_t number"); }
+      None => { clean_panic!("the first argument must be a valid time_t number"); }
     };
     i+=1;
     //unsafe: get the ith char
