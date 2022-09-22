@@ -8,6 +8,11 @@ use libc::setrlimit;
 use libc::execvp;
 use libc::c_char;
 
+macro_rules! clean_panic
+{
+    ($str:literal) => { panic!("{}", $str); }
+}
+
 #[no_mangle]
 pub extern fn main(argc: i32, argv: *const *const c_char) -> i32
 {
@@ -52,7 +57,7 @@ fn wrap_setrlimit(resource: __rlimit_resource_t, rlp: *const rlimit)
   };
 
   if setrlimit_status > 0 {
-    panic!("Failed to set rlimit")
+    clean_panic!("Failed to set rlimit")
   }
 }
 
@@ -60,7 +65,7 @@ fn sanitize_input(argc: i32, argv: *const *const c_char) -> rlim_t
 {
   if 2 != argc
   {
-    panic!("You must provide two arguments: runout [seconds] [COMMAND]");
+    clean_panic!("You must provide two arguments: runout [seconds] [COMMAND]");
   }
 
   let num: *const c_char;
@@ -79,7 +84,7 @@ fn sanitize_input(argc: i32, argv: *const *const c_char) -> rlim_t
     match (curr as u8 as char).to_digit(10)
     {
       Some(a) => { secs *= 10; secs += a as rlim_t; }
-      None => { panic!("The second argument must be a valid time_t number."); }
+      None => { clean_panic!("The second argument must be a valid time_t number."); }
     };
     i+=1;
     //unsafe: get the ith char
